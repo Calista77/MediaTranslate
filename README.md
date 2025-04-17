@@ -1,36 +1,36 @@
-# Media Transcription and Content Analysis Tool
+# Audio Transcription & Content Safety Analyzer
 
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-一个基于Python的音频转文字工具，具备内容安全分析功能，可检测仇外言论、偏见表达、虚假信息和仇恨言论。
+A Python-based tool for converting audio to text with built-in content safety analysis, detecting xenophobia, bias, misinformation, and hate speech.
 
-## 功能特性
+## Key Features
 
-- 🎧 支持WAV音频文件转文字
-- 🌍 多语言识别（默认英语，支持中文、日语）
-- ⚙️ 双模式识别：
-  - 离线模式（pocketsphinx引擎）
-  - 在线模式（Google Web Speech API）
-- 🔍 内容安全分析：
-  - 仇外言论检测
-  - 偏见表达识别
-  - 虚假信息标记
-  - 仇恨言论筛查
-- 📊 风险等级评估（低/中/高）
-- 💾 结果导出功能
+- 🎧 WAV audio file transcription
+- 🌍 Multilingual support (English, Chinese, Japanese)
+- ⚙️ Dual recognition modes:
+  - Offline (pocketsphinx engine)
+  - Online (Google Web Speech API)
+- 🔍 Content safety analysis:
+  - Xenophobic speech detection
+  - Bias expression identification
+  - Misinformation flagging
+  - Hate speech screening
+- 📊 Risk level assessment (Low/Medium/High)
+- 💾 Result export functionality
 
-## 安装指南
+## Installation
 
-### 前置要求
+### Prerequisites
 - Python 3.7+
-- pip 包管理工具
+- pip package manager
 
-### 安装步骤
+### Setup
 ```bash
-# 克隆仓库（可选）
+# Clone repository (optional)
 git clone https://github.com/Calista77/MediaTranslate.git
 cd audio-analyzer
 
-# 安装依赖
+# Install dependencies
 pip install SpeechRecognition pocketsphinx
