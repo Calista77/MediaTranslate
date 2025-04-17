@@ -1,4 +1,4 @@
-# Audio Transcription & Content Safety Analyzer
+# Media Transcription & Content Safety Analyzer
 
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
