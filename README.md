@@ -1,4 +1,4 @@
-# Audio Transcription and Content Analysis Tool
+# Media Transcription and Content Analysis Tool
 
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -29,7 +29,7 @@
 ### 安装步骤
 ```bash
 # 克隆仓库（可选）
-git clone https://github.com/yourusername/audio-analyzer.git
+git clone https://github.com/Calista77/MediaTranslate.git
 cd audio-analyzer
 
 # 安装依赖
