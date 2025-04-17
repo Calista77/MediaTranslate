@@ -8,7 +8,7 @@ A Python-based tool for converting audio to text with built-in content safety an
 ## Key Features
 
 - 🎧 WAV audio file transcription
-- 🌍 Multilingual support (English, Chinese, Japanese)
+- 🌍 Multilingual support (Arabic, Chinese, English, French, Russian, and Spanish)
 - ⚙️ Dual recognition modes:
   - Offline (pocketsphinx engine)
   - Online (Google Web Speech API)
