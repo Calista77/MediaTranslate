@@ -3,10 +3,10 @@ import os
 import re
 from collections import Counter
 
-def analyze_content(text):
+def analyze_content(text, language='en-US'):
     """
-    分析文本内容是否存在风险言论
-    返回分析结果字典
+    Analyze text for risky content with multilingual support
+    Returns analysis results dictionary
     """
     analysis = {
         'xenophobia': False,
@@ -16,73 +16,113 @@ def analyze_content(text):
         'flags': []
     }
     
-    # 定义关键词库（实际应用中应该使用更全面的词库）
-    xenophobia_terms = ['foreigner', 'immigrant', 'alien', 'invader', 'go back to',
-                      '外国人', '移民', '异族', '滚回']
-    bias_terms = ['all women are', 'all men are', 'always', 'never', 'everyone knows',
-                '女人都', '男人都', '总是', '从不']
-    misinformation_terms = ['fact', 'proven', 'scientifically', 'everyone knows',
-                          '事实', '科学证明', '众所周知']
-    hate_speech_terms = ['hate', 'kill', 'exterminate', '消灭', '仇恨', '杀死']
+    # Multilingual keyword libraries
+    keyword_lib = {
+        # English (default)
+        'en-US': {
+            'xenophobia': ['foreigner', 'immigrant', 'alien', 'invader', 'go back to'],
+            'bias': ['all women are', 'all men are', 'always', 'never', 'everyone knows'],
+            'misinformation': ['fact', 'proven', 'scientifically', 'everyone knows'],
+            'hate_speech': ['hate', 'kill', 'exterminate']
+        },
+        # Chinese
+        'zh-CN': {
+            'xenophobia': ['外国人', '移民', '异族', '滚回'],
+            'bias': ['女人都', '男人都', '总是', '从不'],
+            'misinformation': ['事实', '科学证明', '众所周知'],
+            'hate_speech': ['消灭', '仇恨', '杀死']
+        },
+        # Japanese
+        'ja-JP': {
+            'xenophobia': ['外国人', '移民', '異民族', '帰れ'],
+            'bias': ['女はみんな', '男はみんな', 'いつも', '決して'],
+            'misinformation': ['事実', '科学的証明', '誰もが知っている'],
+            'hate_speech': ['消せ', '憎しみ', '殺せ']
+        },
+        # Arabic
+        'ar-AR': {
+            'xenophobia': ['أجنبي', 'مهاجر', 'دخيل', 'غازي', 'ارجع إلى'],
+            'bias': ['كل النساء', 'كل الرجال', 'دائما', 'أبدا'],
+            'misinformation': ['حقيقة', 'مثبت', 'علميا'],
+            'hate_speech': ['كراهية', 'اقتل', 'أبيد']
+        },
+        # French
+        'fr-FR': {
+            'xenophobia': ['étranger', 'immigrant', 'envahisseur', 'retourne à'],
+            'bias': ['toutes les femmes sont', 'tous les hommes sont', 'toujours', 'jamais'],
+            'misinformation': ['fait', 'prouvé', 'scientifiquement'],
+            'hate_speech': ['haine', 'tuer', 'exterminer']
+        },
+        # Russian
+        'ru-RU': {
+            'xenophobia': ['иностранец', 'иммигрант', 'чужеземец', 'возвращайся в'],
+            'bias': ['все женщины', 'все мужчины', 'всегда', 'никогда'],
+            'misinformation': ['факт', 'доказано', 'научно'],
+            'hate_speech': ['ненависть', 'убить', 'истребить']
+        },
+        # Spanish
+        'es-ES': {
+            'xenophobia': ['extranjero', 'inmigrante', 'invasor', 'vuelve a'],
+            'bias': ['todas las mujeres son', 'todos los hombres son', 'siempre', 'nunca'],
+            'misinformation': ['hecho', 'probado', 'científicamente'],
+            'hate_speech': ['odio', 'matar', 'exterminar']
+        }
+    }
     
-    # 转换为小写方便匹配
+    # Get keywords for the specified language, default to English if not found
+    keywords = keyword_lib.get(language, keyword_lib['en-US'])
+    
     lower_text = text.lower()
     
-    # 检测仇外言论
-    xenophobia_matches = [term for term in xenophobia_terms 
-                         if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
-    if xenophobia_matches:
-        analysis['xenophobia'] = True
-        analysis['flags'].append(f"仇外言论关键词: {', '.join(xenophobia_matches)}")
-    
-    # 检测偏见
-    bias_matches = [term for term in bias_terms 
-                   if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
-    if bias_matches:
-        analysis['bias'] = True
-        analysis['flags'].append(f"偏见表达: {', '.join(bias_matches)}")
-    
-    # 检测虚假信息
-    misinfo_matches = [term for term in misinformation_terms 
-                      if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
-    if misinfo_matches:
-        analysis['misinformation'] = True
-        analysis['flags'].append(f"可能虚假信息标记: {', '.join(misinfo_matches)}")
-    
-    # 检测仇恨言论
-    hate_matches = [term for term in hate_speech_terms 
-                   if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
-    if hate_matches:
-        analysis['hate_speech'] = True
-        analysis['flags'].append(f"仇恨言论关键词: {', '.join(hate_matches)}")
+    # Check each category
+    for category in ['xenophobia', 'bias', 'misinformation', 'hate_speech']:
+        matches = [term for term in keywords[category] 
+                 if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
+        if matches:
+            analysis[category] = True
+            # Display terms in original language for accurate reporting
+            analysis['flags'].append(f"{category.capitalize()} terms detected: {', '.join(matches)}")
     
     return analysis
 
 def transcribe_audio(audio_path=None, language='en-US', offline=True):
     """
-    将WAV音频文件转换为文字（默认英文识别）
+    Convert WAV audio to text with extended language support
     
-    参数:
-        audio_path (str): 音频文件路径（绝对或相对路径）
-        language (str): 识别语言，默认英语(en-US)
-                       中文: zh-CN, 日语: ja-JP
-        offline (bool): 是否使用离线模式，默认True
+    Args:
+        audio_path (str): Audio file path (absolute or relative)
+        language (str): Recognition language code
+        offline (bool): Use offline mode (default True)
         
-    返回:
-        str: 识别结果或错误信息
+    Returns:
+        str: Transcription result or error message
     """
-    # 处理路径输入
+    # Supported languages mapping
+    supported_languages = {
+        'en-US': 'en-US',
+        'zh-CN': 'zh-CN',
+        'ja-JP': 'ja-JP',
+        'ar-AR': 'ar-AR',
+        'fr-FR': 'fr-FR',
+        'ru-RU': 'ru-RU',
+        'es-ES': 'es-ES'
+    }
+    
+    # Validate language
+    if language not in supported_languages:
+        return f"Error: Unsupported language '{language}'"
+    
+    # Path handling
     if audio_path is None:
         audio_path = input("Enter audio file path: ").strip()
-    audio_path = os.path.expanduser(audio_path)  # 处理 ~ 路径
+    audio_path = os.path.expanduser(audio_path)
     
-    # 验证文件
+    # File validation
     if not os.path.isfile(audio_path):
         return f"Error: File {audio_path} does not exist"
     if not audio_path.lower().endswith('.wav'):
         print("Warning: Non-WAV file may cause issues")
     
-    # 初始化识别器
     r = sr.Recognizer()
     
     try:
@@ -91,10 +131,11 @@ def transcribe_audio(audio_path=None, language='en-US', offline=True):
             audio = r.record(source)
             
             if offline:
-                print("Using offline engine (pocketsphinx)...")
+                print(f"Using offline engine (pocketsphinx) for {language}...")
+                # Note: Offline mode may have limited language support
                 return r.recognize_sphinx(audio, language=language)
             else:
-                print("Using online engine (Google Web Speech API)...")
+                print(f"Using online engine (Google Web Speech API) for {language}...")
                 return r.recognize_google(audio, language=language)
     
     except sr.UnknownValueError:
@@ -105,18 +146,20 @@ def transcribe_audio(audio_path=None, language='en-US', offline=True):
         return f"Error: {str(e)}"
 
 def main():
-    """命令行交互界面"""
-    print("\n=== Audio Transcription & Analysis Tool ===")
+    """Command-line interface"""
+    print("\n=== Multilingual Audio Transcription & Analysis ===")
     print("1. Offline mode (default)")
     print("2. Online mode (requires internet)")
     choice = input("Select mode [1/2]: ").strip()
     offline = choice != '2'
     
-    # 语言选择
-    lang = input("Language [en-US/zh-CN/ja-JP] (default en-US): ").strip()
-    language = lang if lang else 'en-US'
+    # Language selection
+    print("\nSupported languages:")
+    print("en-US: English (US)\nzh-CN: Chinese")
+    print("ar-AR: Arabic\nfr-FR: French\nru-RU: Russian\nes-ES: Spanish")
+    lang = input("\nEnter language code (default en-US): ").strip() or 'en-US'
     
-    # 文件输入
+    # File input
     while True:
         file_path = input("\nEnter WAV file path: ").strip()
         file_path = os.path.expanduser(file_path)
@@ -124,16 +167,15 @@ def main():
             break
         print(f"Error: File not found - {file_path}")
     
-    # 执行转换
-    result = transcribe_audio(file_path, language=language, offline=offline)
+    # Transcription
+    result = transcribe_audio(file_path, language=lang, offline=offline)
     
-    # 输出结果
     print("\n=== Transcription Result ===")
     print(result)
     
-    # 内容分析
+    # Content analysis
     print("\n=== Content Analysis ===")
-    analysis = analyze_content(result)
+    analysis = analyze_content(result, language=lang)
     
     if not any([analysis['xenophobia'], analysis['bias'], 
                analysis['misinformation'], analysis['hate_speech']]):
@@ -143,16 +185,15 @@ def main():
         for flag in analysis['flags']:
             print(f"- {flag}")
         
-        # 风险等级评估
         risk_score = sum([analysis['xenophobia'], analysis['bias'],
                         analysis['misinformation'], analysis['hate_speech']])
         print(f"\nRisk level: {'Low' if risk_score == 1 else 'Medium' if risk_score == 2 else 'High'}")
     
-    # 保存结果
+    # Save results
     if input("\nSave to file? [y/N]: ").lower() == 'y':
         output_file = f"{os.path.splitext(file_path)[0]}_transcript.txt"
         try:
-            with open(output_file, 'w') as f:
+            with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(result)
                 if analysis['flags']:
                     f.write("\n\n=== Analysis Results ===\n")

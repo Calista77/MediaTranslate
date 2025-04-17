@@ -1,5 +1,62 @@
 import speech_recognition as sr
 import os
+import re
+from collections import Counter
+
+def analyze_content(text):
+    """
+    分析文本内容是否存在风险言论
+    返回分析结果字典
+    """
+    analysis = {
+        'xenophobia': False,
+        'bias': False,
+        'misinformation': False,
+        'hate_speech': False,
+        'flags': []
+    }
+    
+    # 定义关键词库（实际应用中应该使用更全面的词库）
+    xenophobia_terms = ['foreigner', 'immigrant', 'alien', 'invader', 'go back to',
+                      '外国人', '移民', '异族', '滚回']
+    bias_terms = ['all women are', 'all men are', 'always', 'never', 'everyone knows',
+                '女人都', '男人都', '总是', '从不']
+    misinformation_terms = ['fact', 'proven', 'scientifically', 'everyone knows',
+                          '事实', '科学证明', '众所周知']
+    hate_speech_terms = ['hate', 'kill', 'exterminate', '消灭', '仇恨', '杀死']
+    
+    # 转换为小写方便匹配
+    lower_text = text.lower()
+    
+    # 检测仇外言论
+    xenophobia_matches = [term for term in xenophobia_terms 
+                         if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
+    if xenophobia_matches:
+        analysis['xenophobia'] = True
+        analysis['flags'].append(f"仇外言论关键词: {', '.join(xenophobia_matches)}")
+    
+    # 检测偏见
+    bias_matches = [term for term in bias_terms 
+                   if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
+    if bias_matches:
+        analysis['bias'] = True
+        analysis['flags'].append(f"偏见表达: {', '.join(bias_matches)}")
+    
+    # 检测虚假信息
+    misinfo_matches = [term for term in misinformation_terms 
+                      if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
+    if misinfo_matches:
+        analysis['misinformation'] = True
+        analysis['flags'].append(f"可能虚假信息标记: {', '.join(misinfo_matches)}")
+    
+    # 检测仇恨言论
+    hate_matches = [term for term in hate_speech_terms 
+                   if re.search(r'\b' + re.escape(term.lower()) + r'\b', lower_text)]
+    if hate_matches:
+        analysis['hate_speech'] = True
+        analysis['flags'].append(f"仇恨言论关键词: {', '.join(hate_matches)}")
+    
+    return analysis
 
 def transcribe_audio(audio_path=None, language='en-US', offline=True):
     """
@@ -49,7 +106,7 @@ def transcribe_audio(audio_path=None, language='en-US', offline=True):
 
 def main():
     """命令行交互界面"""
-    print("\n=== Audio Transcription Tool ===")
+    print("\n=== Audio Transcription & Analysis Tool ===")
     print("1. Offline mode (default)")
     print("2. Online mode (requires internet)")
     choice = input("Select mode [1/2]: ").strip()
@@ -71,8 +128,25 @@ def main():
     result = transcribe_audio(file_path, language=language, offline=offline)
     
     # 输出结果
-    print("\n=== Result ===")
+    print("\n=== Transcription Result ===")
     print(result)
+    
+    # 内容分析
+    print("\n=== Content Analysis ===")
+    analysis = analyze_content(result)
+    
+    if not any([analysis['xenophobia'], analysis['bias'], 
+               analysis['misinformation'], analysis['hate_speech']]):
+        print("✅ Content analysis: No significant risks detected")
+    else:
+        print("⚠️ Potential risks detected:")
+        for flag in analysis['flags']:
+            print(f"- {flag}")
+        
+        # 风险等级评估
+        risk_score = sum([analysis['xenophobia'], analysis['bias'],
+                        analysis['misinformation'], analysis['hate_speech']])
+        print(f"\nRisk level: {'Low' if risk_score == 1 else 'Medium' if risk_score == 2 else 'High'}")
     
     # 保存结果
     if input("\nSave to file? [y/N]: ").lower() == 'y':
@@ -80,6 +154,10 @@ def main():
         try:
             with open(output_file, 'w') as f:
                 f.write(result)
+                if analysis['flags']:
+                    f.write("\n\n=== Analysis Results ===\n")
+                    for flag in analysis['flags']:
+                        f.write(f"- {flag}\n")
             print(f"Saved to: {output_file}")
         except IOError as e:
             print(f"Save failed: {str(e)}")
